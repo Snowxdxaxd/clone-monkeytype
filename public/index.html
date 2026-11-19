@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Клавиши — тренажёр печати</title>
+  <meta name="description" content="Тренажёр печати: тесты на время и на слова, русский и английский, гонки по коду комнаты и таблица лидеров.">
+  <meta property="og:title" content="Клавиши — тренажёр печати">
+  <meta property="og:description" content="Тесты на время и на слова, русский и английский, гонки в реальном времени по коду комнаты и таблица лидеров.">
+  <meta property="og:type" content="website">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23e2b714'/%3E%3Cg fill='%231c1e24'%3E%3Crect x='7' y='9' width='4' height='4' rx='1'/%3E%3Crect x='14' y='9' width='4' height='4' rx='1'/%3E%3Crect x='21' y='9' width='4' height='4' rx='1'/%3E%3Crect x='7' y='16' width='4' height='4' rx='1'/%3E%3Crect x='14' y='16' width='4' height='4' rx='1'/%3E%3Crect x='21' y='16' width='4' height='4' rx='1'/%3E%3Crect x='9' y='23' width='14' height='3' rx='1.5'/%3E%3C/g%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/css/style.css?v=1">
+</head>
+<body>
+  <div class="wrap">
+    <header class="topbar">
+      <a class="logo" href="/" id="logoLink">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="2.5" y="6" width="19" height="12" rx="2"/><path d="M6.5 10h.01M10 10h.01M13.5 10h.01M17 10h.01M6.5 13.5h.01M10 13.5h.01M13.5 13.5h.01M17 13.5h.01M8 16.5h8"/></svg>
+        <span>клавиши</span>
+      </a>
+      <nav class="tabs">
+        <button class="tab active" id="tabTest" type="button">Тест</button>
+        <button class="tab" id="tabRace" type="button">Гонка</button>
+      </nav>
+      <div class="namebox">
+        <input id="nameInput" maxlength="16" placeholder="имя" autocomplete="off" spellcheck="false">
+        <span id="nameSaved" class="name-saved"></span>
+      </div>
+    </header>
+
+    <!-- ТЕСТ -->
+    <main id="viewTest">
+      <div class="controls">
+        <div class="ctrl-group" id="modeSwitch">
+          <button data-mode="time" class="ctrl active" type="button">время</button>
+          <button data-mode="words" class="ctrl" type="button">слова</button>
+        </div>
+        <span class="ctrl-sep"></span>
+        <div class="ctrl-group" id="configSwitch"></div>
+        <span class="ctrl-sep"></span>
+        <div class="ctrl-group" id="langSwitch">
+          <button data-lang="ru" class="ctrl active" type="button">ru</button>
+          <button data-lang="en" class="ctrl" type="button">en</button>
+        </div>
+      </div>
+
+      <div class="stage">
+        <div id="feedWrap" class="feed-wrap">
+          <div id="feed" class="feed"><div id="feedInner" class="feed-inner"></div></div>
+          <div id="caret" class="caret hidden"></div>
+        </div>
+        <div class="live" id="liveStatus">wpm — · точность —</div>
+
+        <div id="resultPanel" class="result hidden">
+          <div class="result-main">
+            <div class="result-wpm">
+              <div class="big" id="resWpm">0</div>
+              <div class="lbl">wpm</div>
+            </div>
+            <div class="result-stats">
+              <div class="stat"><div class="v" id="resAcc">0%</div><div class="lbl">точность</div></div>
+              <div class="stat"><div class="v" id="resRaw">0</div><div class="lbl">raw</div></div>
+              <div class="stat"><div class="v" id="resTime">0с</div><div class="lbl">время</div></div>
+              <div class="stat"><div class="v" id="resChars">0</div><div class="lbl">верно / неверно / лишние</div></div>
+            </div>
+          </div>
+          <canvas id="chart" height="220"></canvas>
+          <div class="result-actions">
+            <button class="btn primary" id="btnAgain" type="button">Ещё раз <span class="kbd">Tab</span></button>
+            <button class="btn" id="btnBoard" type="button">Лидерборд</button>
+            <span id="saveNote" class="save-note"></span>
+          </div>
+        </div>
+      </div>
+      <div class="hint">Tab — заново</div>
+    </main>
+
+    <!-- ГОНКА -->
+    <main id="viewRace" class="hidden">
+      <div id="raceSetup" class="panel">
+        <div class="panel-title">Гонка</div>
+        <div class="setup-row">
+          <div class="ctrl-group" id="raceLang">
+            <button data-lang="ru" class="ctrl active" type="button">ru</button>
+            <button data-lang="en" class="ctrl" type="button">en</button>
+          </div>
+          <button class="btn primary" id="raceCreate" type="button">Создать гонку</button>
+        </div>
+        <div class="or"><span>или войти по коду</span></div>
+        <div class="setup-row">
+          <input id="raceCodeInput" class="code-input" maxlength="6" placeholder="КОД" autocomplete="off" spellcheck="false">
+          <button class="btn" id="raceJoin" type="button">Войти</button>
+        </div>
+        <div id="raceError" class="err"></div>
+      </div>
+
+      <div id="raceLobby" class="panel hidden">
+        <div class="panel-title">Комната <span id="lobbyCode" class="mono-code"></span></div>
+        <div class="copy-row">
+          <input id="raceLink" readonly spellcheck="false">
+          <button class="btn" id="raceCopy" type="button" title="Скопировать ссылку">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+            <span>ссылка</span>
+          </button>
+        </div>
+        <div id="racePlayers" class="players"></div>
+        <div class="lobby-actions">
+          <button class="btn primary" id="raceStart" type="button">Старт</button>
+          <button class="btn" id="raceLeave" type="button">Выйти</button>
+        </div>
+      </div>
+
+      <div id="raceRun" class="hidden">
+        <div id="raceBars" class="bars"></div>
+        <div id="raceCountdown" class="countdown hidden"></div>
+        <div id="raceFeedWrap" class="feed-wrap">
+          <div id="raceFeed" class="feed"><div id="raceFeedInner" class="feed-inner"></div></div>
+          <div id="raceCaret" class="caret hidden"></div>
+        </div>
+        <div class="live" id="raceLive">wpm — · точность —</div>
+        <div id="raceWait" class="wait-note hidden">Ждём остальных участников…</div>
+
+        <div id="raceResultPanel" class="result hidden">
+          <div class="panel-title">Результаты гонки</div>
+          <table class="table" id="raceResultTable">
+            <thead><tr><th>место</th><th>имя</th><th>wpm</th><th>точность</th><th>символы</th></tr></thead>
+            <tbody></tbody>
+          </table>
+          <div class="result-actions">
+            <button class="btn primary" id="raceAgain" type="button">Новая гонка</button>
+            <button class="btn" id="raceToTest" type="button">К тесту</button>
+            <span id="raceSaveNote" class="save-note"></span>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- ЛИДЕРБОРД -->
+  <div id="modal" class="modal hidden">
+    <div class="modal-card">
+      <div class="modal-head">
+        <div class="panel-title">Лидерборд</div>
+        <button class="icon-btn" id="boardClose" type="button" title="Закрыть">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+      </div>
+      <div class="controls">
+        <div class="ctrl-group" id="boardMode">
+          <button data-mode="time" class="ctrl active" type="button">время</button>
+          <button data-mode="words" class="ctrl" type="button">слова</button>
+        </div>
+        <span class="ctrl-sep"></span>
+        <div class="ctrl-group" id="boardConfig"></div>
+      </div>
+      <table class="table" id="boardTable">
+        <thead><tr><th>№</th><th>имя</th><th>wpm</th><th>raw</th><th>точность</th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <div id="boardEmpty" class="wait-note hidden">Пока нет результатов для этой конфигурации</div>
+    </div>
+  </div>
+
+  <script type="module" src="/js/app.js?v=1"></script>
+</body>
+</html>
